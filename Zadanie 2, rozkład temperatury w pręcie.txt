@@ -1,0 +1,120 @@
+#include "math.h"
+#include "stdio.h"
+#include "winbgi2.h"
+#include "stdlib.h"
+#include "gauss.h"
+int N;
+double lambda=58;
+double L=1;
+void computeMatrix(int N, double **K);
+void displayMatrix(int N, double **K);
+void computeVector(int N, double *F);
+void displayVector(int N, double *F);
+void rozwiazanie(int N,double *T);
+void wyznacznik(int N,double **K);
+void main()
+{
+	scanf("%d",&N);
+	//alokacja pamieci dla tablic wykorzystywanych w programie
+	double **K=(double**)malloc((N+1)*sizeof(double*));
+	double *F=(double*)malloc((N+1)*sizeof(double));
+	double *T=(double*)malloc((N+1)*sizeof(double));
+	for(int i=0;i<N+1;i++)
+	{
+		K[i]=(double*)malloc((N+1)*sizeof(double));
+	}
+	computeMatrix(N,K);
+	displayMatrix(N,K);
+	computeVector(N,F);
+	printf("\n\n");
+	displayVector(N,F);
+	gauss(N+1,K,T,F);
+	printf("\n\n");
+	graphics(800,800);
+	scale(0,270,1,310);
+	rozwiazanie(N,T);
+	wyznacznik(N,K);
+	wait();
+}
+//funkcja wypelnia odpowiednio macierz K
+void computeMatrix(int N, double **K)
+{
+	for(int i=0;i<N+1;i++)
+	{
+		for(int j=0;j<N+1;j++)
+		{
+			if(i==j && i!=0 && j!=0 && i!=N && j!=N)
+			{
+				K[i][j]=-2;
+			}else if(i==j+1 || i==j-1){
+				K[i][j]=1;
+			}else{
+				K[i][j]=0;
+			}
+		}
+	}
+	K[0][1]=0;
+	K[N][N-1]=0;
+	K[0][0]=1;
+	K[N][N]=1;
+}
+//funkcja wyswietla macierz K
+void displayMatrix(int N, double **K)
+{
+	for(int i=0;i<N+1;i++)
+	{
+		for(int j=0;j<N+1;j++)
+		{
+			printf("%.0lf  ",K[i][j]);	
+		}
+		printf("\n");
+	}
+}
+//funkcja wypelnia odpowiednio wektor F
+void computeVector(int N, double *F)
+{
+	for(int i=1;i<N;i++)
+	{
+		F[i]=-10000*sin(4*atan(1.)*i*L/N)/lambda*pow(1.0/N,2);
+	}
+	F[0]=273; 
+	F[N]=300;
+}
+//funkcja wyswietla wektor F
+void displayVector(int N, double *F)
+{
+	for(int i=0;i<N+1;i++)
+	{
+		printf("%lf\n",F[i]);
+	}
+}
+//funkcja wyswietla wyniki obliczone metod¹ eliminacji Gaussa oraz rysuje odpowiedni wykres
+void rozwiazanie(int N,double *T)
+{
+	for(int i=0;i<N+1;i++)
+	{
+		printf("%lf\n",T[i]);
+		circle(i*L/N,T[i],2);
+	}
+}
+//funkcja obliczaj¹ca wyznacznik macierzy K metod¹ Laplace'a
+void wyznacznik(int N,double **K)
+{
+
+	for(int i=0;i<N;i++)
+	{
+		for(int j=i+1;j<N+1;j++)
+		{
+			for(int k=i+1;k<N+1;k++)
+			{
+				K[j][k]-=K[j][i]/K[i][i]*K[i][k];
+			}
+		}
+	}
+	double det=1;
+	for(int i=0;i<N;i++)
+	{
+		det*=K[i][i];
+	}
+	printf("\nwyznacznik macierzy K wynosi %.1lf\n",det);
+}
